@@ -1,3 +1,4 @@
+
 @extends('layouts.app')
 
 @section('title', 'Create QR Code')
@@ -27,6 +28,7 @@
             </form>
         </div>
     </div>
+
 
     <!-- Right Panel -->
     <div class="right-panel">
