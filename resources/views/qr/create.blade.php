@@ -1,31 +1,47 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Create QR Code</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+@extends('layouts.app')
 
-    <div class="bg-white p-6 rounded-lg shadow-md w-96">
-        <h1 class="text-xl font-bold mb-4">QR Code Generator</h1>
+@section('title', 'Create QR Code')
 
-        <form method="POST" action="{{ route('qr.store') }}" class="space-y-4">
-            @csrf
+@section('content')
+<div class="container">
+    <!-- Left Panel -->
+    <div class="left-panel">
+        <!-- QR Type -->
+        <div class="card">
+            <h3>QR Code Type</h3>
+            <form method="POST" action="{{ route('qr.store') }}">
+                @csrf
+                <select name="type" class="w-full border p-2 rounded">
+                    <option value="url">URL</option>
+                    <option value="text">Text</option>
+                </select>
 
-            <select name="type" class="w-full border p-2 rounded">
-                <option value="url">URL</option>
-                <option value="text">Text</option>
-            </select>
+                <input type="text" name="url" placeholder="Enter URL" class="w-full border p-2 rounded mt-2">
+                <input type="text" name="text" placeholder="Enter text" class="w-full border p-2 rounded mt-2">
 
-            <input type="text" name="url" placeholder="Enter URL" class="w-full border p-2 rounded">
-            <input type="text" name="text" placeholder="Enter text" class="w-full border p-2 rounded">
+                <!-- More customization sections like QRColor, Logo, Shape can go here later -->
 
-            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">
-                Generate QR Code
-            </button>
-        </form>
+                <button type="submit" class="btn btn-blue w-full mt-4">
+                    Generate QR Code
+                </button>
+            </form>
+        </div>
     </div>
 
-</body>
-</html>
+    <!-- Right Panel -->
+    <div class="right-panel">
+        <div class="qr-preview">
+            <h2 class="text-lg font-bold mb-2">Preview</h2>
+            <p class="mb-2 text-gray-600">Your QR Code will appear here after generating.</p>
+
+            @if(session('qrPath'))
+                <img src="{{ session('qrPath') }}" alt="QR Code" class="mx-auto mb-4">
+                <div class="file-btns">
+                    <a href="{{ session('qrPath') }}" download class="btn btn-green">Download PNG</a>
+                </div>
+            @endif
+        </div>
+        <p class="footer-note">Tip: For better scanning, keep your QR code simple with high contrast.</p>
+    </div>
+</div>
+@endsection
