@@ -154,3 +154,8 @@ body {
   max-height: 1000px;
   padding: 10px;
 }
+
+.accordion, .panel {
+  width: 100%;        /* full width of parent */
+  max-width: 650px;   /* don’t go wider than 650px */
+}
