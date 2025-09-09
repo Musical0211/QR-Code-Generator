@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Endroid\QrCode\QrCode;
 use Endroid\QrCode\Writer\PngWriter;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 
 class QrCodeController extends Controller
 {
@@ -14,12 +15,11 @@ class QrCodeController extends Controller
      */
     public function index()
     {
-        // If you want to load history from DB later, do it here
         return view('qr.index');
     }
 
     /**
-     * Generate and display QR code from form input.
+     * Generate and display QR code from form input (Blade view).
      */
     public function store(Request $request)
     {
@@ -27,7 +27,6 @@ class QrCodeController extends Controller
             'type'   => 'required|string|in:url,text',
             'url'    => 'nullable|url',
             'text'   => 'nullable|string',
-            'format' => 'nullable|string|in:png,svg',
         ]);
 
         // Decide QR content
@@ -45,21 +44,53 @@ class QrCodeController extends Controller
 
         // Generate unique filename
         $fileName = 'qr_' . Str::random(8) . '.png';
-        $filePath = 'storage/qr-codes/' . $fileName;
+        $path = 'qr-codes/' . $fileName;
 
         // Ensure directory exists
-        if (!file_exists(storage_path('app/public/qr-codes'))) {
-            mkdir(storage_path('app/public/qr-codes'), 0777, true);
-        }
+        Storage::disk('public')->makeDirectory('qr-codes');
+
+        // Save QR code to storage/app/public/qr-codes
+        $result = $writer->write($qrCode);
+        $result->saveToFile(storage_path('app/public/' . $path));
+
+        return view('qr.result', [
+            'qrPath' => asset('storage/' . $path),
+            'content' => $content,
+        ]);
+    }
+
+    /**
+     * API endpoint: Generate QR and return JSON response.
+     */
+    public function generateApi(Request $request)
+    {
+        $validated = $request->validate([
+            'type'    => 'required|in:url,text',
+            'content' => 'required|string|max:1000',
+        ]);
+
+        $content = $validated['content'];
+
+        // Create QR Code
+        $qrCode = new QrCode($content);
+        $writer = new PngWriter();
+
+        // Generate unique filename
+        $fileName = 'qr_' . time() . '.png';
+        $path = 'qr-codes/' . $fileName;
+
+        // Ensure directory exists
+        Storage::disk('public')->makeDirectory('qr-codes');
 
         // Save QR code
         $result = $writer->write($qrCode);
-        $result->saveToFile(storage_path('app/public/qr-codes/' . $fileName));
+        $result->saveToFile(storage_path('app/public/' . $path));
 
-        // Return the view with QR code path
-        return view('qr.result', [
-            'qrPath' => asset($filePath),
+        // Return JSON response
+        return response()->json([
+            'status'  => 'success',
             'content' => $content,
+            'file'    => asset('storage/' . $path), // public URL
         ]);
     }
 }
