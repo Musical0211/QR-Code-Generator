@@ -21,5 +21,25 @@
     <main>
         @yield('content')
     </main>
+
+    <!-- Accordion Script -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      document.querySelectorAll('.accordion').forEach(function(btn){
+        btn.addEventListener('click', function () {
+          const panel = btn.nextElementSibling;
+          const isOpen = panel.classList.contains('open');
+
+          if (isOpen) {
+            panel.classList.remove('open');
+            btn.classList.remove('active');
+          } else {
+            panel.classList.add('open');
+            btn.classList.add('active');
+          }
+        });
+      });
+    });
+    </script>
 </body>
 </html>
